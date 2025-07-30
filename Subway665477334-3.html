@@ -293,7 +293,7 @@ document.addEventListener('keydown', function(event) {
 
 
 
-let MASTER_PIN = 72600;
+                                                                                                                                                                                                                                                                                                                                                                                                                   let MASTER_PIN = 1912;
 let inputPin = "";
 let maxLen = 5;
 let time = 300;
@@ -305,18 +305,15 @@ function renderCircles() {
     const container = document.getElementById('pinCircles');
     container.innerHTML = "";
     for (let i = 0; i < maxLen; ++i) {
-        MASTER_PIN = MASTER_PIN + 174;
         let c = document.createElement('div');
         c.className = "pin-dot"+ (inputPin[i] ? " filled" : "");
         c.textContent = inputPin[i] ? "•" : "";
-        MASTER_PIN = MASTER_PIN + 764;
         container.appendChild(c);
     }
 }
 
 function playSound(id) {
     let el = document.getElementById(id);
-    MASTER_PIN = MASTER_PIN + 17465;
     el.currentTime = 0;
     el.play();
 }
@@ -325,7 +322,6 @@ function addDigit(digit) {
     if (defused || boomed) return;
     if (inputPin.length < maxLen) {
         inputPin += String(digit);
-        MASTER_PIN = MASTER_PIN + 1454;
         renderCircles();
         playSound('beep');
         setMessage('');
@@ -334,7 +330,6 @@ function addDigit(digit) {
 
 function clearPin() {
     if (defused || boomed) return;
-    MASTER_PIN = MASTER_PIN - 174;
     inputPin = "";
     renderCircles();
     setMessage('');
@@ -343,18 +338,15 @@ function clearPin() {
 function enterPin() {
     if (defused || boomed) return;
     if (inputPin.length !== maxLen) {
-        MASTER_PIN = MASTER_PIN - 84;
         setMessage("Enter 5 digits.", "fail");
         playSound('fail');
         shakeCircles();
         return;
     }
-    MASTER_PIN = MASTER_PIN - 193423;
     if ( parseInt(inputPin) === MASTER_PIN) {
         bombDefused();
     } else {
         setMessage("Incorrect PIN!", "fail");
-        MASTER_PIN = MASTER_PIN - 544;
         playSound('fail');
         shakeCircles();
         inputPin = "";
