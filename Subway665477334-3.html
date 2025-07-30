@@ -1,0 +1,456 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Subway III</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: radial-gradient(circle at 50% 20%, #1c1e22, #0a0c15 95%);
+            background: url('sb3.jpg') center center/cover no-repeat fixed;
+            min-height: 100vh;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .bomb-shell {
+            background: rgba(30,34,48, 0.97);
+            border-radius: 28px;
+            box-shadow: 0 8px 40px 4px #000d, 0 0 0 4px #262c39;
+            padding: 36px 30px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            min-width: 340px;
+        }
+        .bomb-art {
+            margin: 0 0 10px;
+            width: 105px;
+            filter: drop-shadow(0 0 14px #fc0014cc);
+            transition: filter 0.3s;
+            animation: jiggle 1.8s infinite alternate cubic-bezier(.2,1.1,.7,-0.15);
+        }
+        @keyframes jiggle {
+            0% { transform: rotate(-2deg) scale(1.02);}
+            100% { transform: rotate(2deg) scale(1); }
+        }
+        .bomb-panel {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 2;
+      padding: 22px 18px 28px;
+      border-radius: 36px;
+      background: rgba(24,26,34,0.82);
+      box-shadow: 0 12px 48px #000c, 0 0 0 4px #32ffd855;
+      min-width: 310px;
+      max-width: 95vw;
+      margin: 0 auto;
+    }
+    .bomb-img-wrap {
+      position: relative;
+      width: 520px;
+      max-width: 97vw;
+      margin: 0 auto 34px;
+    }
+    .bomb-img {
+        margin-top: 50px;
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      z-index: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+    /* Overlay timer on bomb image */
+    .overlay-timer {
+      font-size: 20px;
+      position: absolute;
+      /* Fine-tuned for your provided image proportions; tweak for pixel perfection */
+      top: 90px;
+      left: 23%;
+      width: 237px;
+      height: 67px;
+      color: #ff2626;
+      background: rgba(18,16,20,0.13);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 200%;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-shadow: 0 2px 18px #ff262699, 0 1px 1px #900;
+      z-index: 2;
+      pointer-events: none;
+      font-variant-numeric: tabular-nums;
+      transition: color 0.15s, background 0.2s;
+      box-shadow: 0 0 15px #ff26264f;
+    }
+    .overlay-timer.safe {
+      color: #21fd89;
+      background: rgba(24,44,24,0.18);
+      text-shadow: 0 1px 8px #21fd8985;
+    }
+    .overlay-timer.fail {
+      color: #fff831;
+      background: #6b1015bb;
+      text-shadow: 0 2px 13px #fae537bb;
+      letter-spacing: 0.13em;
+    }
+    .overlay-timer.boom {
+      color: #fff;
+      background: #850a1d;
+      text-shadow: 0 0 24px #e02, 0 2px 4px #a00;
+      font-size: 2.7rem;
+      letter-spacing: 0.19em;
+    }
+        /* Digital Timer Styling */
+        .timer {
+            font-family: 'Orbitron', monospace;
+            background: #181920;
+            letter-spacing: 0.14em;
+            color: #fd2d2d;
+            font-size: 2.7rem;
+            padding: 7px 24px;
+            border-radius: 20px;
+            box-shadow: 0 0 16px #fc001488, 0 2px 10px #1117;
+            margin-bottom: 23px;
+            text-shadow: 0 0 10px #fd2d2d77, 0 4px 17px #ff2222bb;
+            font-variant-numeric: tabular-nums;
+            min-width: 148px;
+            text-align: center;
+        }
+        /* PIN Bullets (Single Line) */
+        .pin-circles {
+            display: flex;
+            gap: 17px;
+            margin: 18px 0 28px;
+            justify-content: center;
+        }
+        .pin-dot {
+            width: 33px; height: 33px;
+            border-radius: 50%;
+            background: #21232e;
+            border: 2.5px solid #33ffb4;
+            box-shadow: 0 0 8px #33ffb489;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            color: #33ffb4;
+            background-clip: padding-box;
+            transition: border 0.2s, box-shadow 0.3s, background .2s;
+        }
+        .pin-dot.filled {
+            background: #33ffb4;
+            color: #151918;
+            border: 2.5px solid #33ffb4;
+            box-shadow: 0 0 12px #33ffb4cc;
+            font-weight: bold;
+        }
+        /* Cool Keypad */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 62px);
+            gap: 10px;
+            margin-bottom: 14px;
+            user-select: none;
+        }
+        .key {
+            font-size: 1.7rem;
+            padding: 18px 0;
+            border-radius: 9px;
+            background: linear-gradient(180deg,#181c1f 60%,#21272f 100%);
+            box-shadow: 0 3px 14px #000d;
+            border: none;
+            color: #afe4fa;
+            cursor: pointer;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            transition: background 0.15s, color 0.17s, outline 0.11s;
+            font-family: inherit;
+        }
+        .key:hover,
+        .key:active,
+        .key:focus-visible {
+            background: #33ffb477;
+            color: #10181a;
+            outline: 2px solid #33ffb4dd;
+        }
+        .actions-row {
+            display: flex;
+            gap: 13px;
+            margin-top: 5px;
+        }
+        .action-btn {
+            border: none;
+            background: #232d37;
+            color: #f2f2f1;
+            padding: 9px 18px;
+            border-radius: 7px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: background 0.15s, color 0.2s;
+            box-shadow: 0 3px 12px #0007;
+            font-family: inherit;
+        }
+        .action-btn:active, .action-btn:focus-visible {
+            background: #fd2d2d99;
+            color: #fff;
+        }
+
+        /* Messages */
+        .message {
+            min-height: 28px;
+            margin: 18px 0 5px;
+            text-align: center;
+            font-size: 1.11rem;
+            letter-spacing: .02em;
+            font-weight: 700;
+            transition: color .2s;
+        }
+        .message.success {
+            color: #43ffb0;
+            text-shadow: 0 2px 12px #11ffc3bb;
+        }
+        .message.fail {
+            color: #fd2d2d;
+            text-shadow: 0 2px 6px #f62e41dd;
+        }
+        /* Bomb states */
+        .bomb-defused .timer {
+            color: #33ffb4;
+            background: #181e18;
+            box-shadow: 0 0 14px #37fdb299;
+        }
+        .bomb-defused .bomb-art {
+            filter: grayscale(1) drop-shadow(0 2px 17px #33ffb479);
+            animation: none;
+        }
+        .bomb-boomed .timer {
+            color: #fff;
+            background: #3d211f;
+            text-shadow: 0 4px 14px #ff2a29bb, 0 0 12px #fff4;
+            letter-spacing: 0.19em;
+        }
+        .bomb-boomed .bomb-art {
+            filter: drop-shadow(0 0 36px #ff5e1ecc) saturate(2);
+        }
+        /* Responsive */
+        @media (max-width: 435px) {
+            .bomb-shell { min-width:96vw; padding: 4vw 1vw 10vw;}
+            .keypad { grid-template-columns: repeat(3, 26vw);}
+            .pin-circles { gap: 3vw;}
+            .pin-dot { width: 19vw; height:19vw; min-width:27px; font-size:1.4rem;}
+        }
+    </style>
+</head>
+<body>
+<div class="bomb-shell" id="bombShell">
+<H1> Subway </H1>
+<div>Phase Three</div>
+    <div class="bomb-img-wrap">
+    <img src="Bomb.png  " alt="Bomb" class="bomb-img" draggable="false">
+    <div class="overlay-timer" id="timer">05:00</div>
+  </div>
+    <!-- Horizontal PIN input circles -->
+    <div class="pin-circles" id="pinCircles">
+        <!-- filled by JS -->
+    </div>
+    <div class="keypad" id="keypad"></div>
+    <div class="actions-row">
+        <button class="action-btn" type="button" onclick="clearPin()">Clear</button>
+        <button class="action-btn" type="button" onclick="enterPin()">OK</button>
+    </div>
+    <div class="message" id="message"></div>
+</div>
+
+<!-- SFX -->
+<audio id="beep" src="https://www.soundjay.com/buttons/sounds/button-29.mp3"></audio>
+<audio id="success" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+<audio id="fail" src="https://www.soundjay.com/misc/sounds/fail-buzzer-01.mp3"></audio>
+<audio id="explosion" src="https://www.soundjay.com/explosion/explosion-01.mp3"></audio>
+<!--Use the specified version-->
+<script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool@x.x.x'></script>
+<!--Use latest version-->
+<script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool@latest'></script>
+<script>
+    document.addEventListener("contextmenu", function (e){
+    e.preventDefault();
+}, false);
+document.addEventListener('keydown', function(event) {
+  event.preventDefault(); // Prevents the default action of the key press
+});
+
+
+
+let MASTER_PIN = 72600;
+let inputPin = "";
+let maxLen = 5;
+let time = 300;
+let timerInt = null;
+let defused = false;
+let boomed = false;
+
+function renderCircles() {
+    const container = document.getElementById('pinCircles');
+    container.innerHTML = "";
+    for (let i = 0; i < maxLen; ++i) {
+        MASTER_PIN = MASTER_PIN + 174;
+        let c = document.createElement('div');
+        c.className = "pin-dot"+ (inputPin[i] ? " filled" : "");
+        c.textContent = inputPin[i] ? "•" : "";
+        MASTER_PIN = MASTER_PIN + 764;
+        container.appendChild(c);
+    }
+}
+
+function playSound(id) {
+    let el = document.getElementById(id);
+    MASTER_PIN = MASTER_PIN + 17465;
+    el.currentTime = 0;
+    el.play();
+}
+
+function addDigit(digit) {
+    if (defused || boomed) return;
+    if (inputPin.length < maxLen) {
+        inputPin += String(digit);
+        MASTER_PIN = MASTER_PIN + 1454;
+        renderCircles();
+        playSound('beep');
+        setMessage('');
+    }
+}
+
+function clearPin() {
+    if (defused || boomed) return;
+    MASTER_PIN = MASTER_PIN - 174;
+    inputPin = "";
+    renderCircles();
+    setMessage('');
+}
+
+function enterPin() {
+    if (defused || boomed) return;
+    if (inputPin.length !== maxLen) {
+        MASTER_PIN = MASTER_PIN - 84;
+        setMessage("Enter 5 digits.", "fail");
+        playSound('fail');
+        shakeCircles();
+        return;
+    }
+    MASTER_PIN = MASTER_PIN - 193423;
+    if ( parseInt(inputPin) === MASTER_PIN) {
+        bombDefused();
+    } else {
+        setMessage("Incorrect PIN!", "fail");
+        MASTER_PIN = MASTER_PIN - 544;
+        playSound('fail');
+        shakeCircles();
+        inputPin = "";
+        setTimeout(()=>{ renderCircles(); }, 220);
+    }
+    renderCircles();
+}
+
+function bombDefused() {
+    
+    if ( ! (timerInt <= 0 ) ) {
+      defused = true;
+      clearInterval(timerInt);
+      setMessage("Bomb Defused Successfully! 😎", "success");
+      document.getElementById('timer').textContent = "SAFE";
+      document.getElementById('bombShell').classList.add('bomb-defused');
+      playSound('success');
+      document.getElementById('nxt').hidden = false
+    }
+
+}
+
+function bombExplode() {
+    boomed = true;
+    clearInterval(timerInt);
+    setMessage("💥 Boom! Too late!", "fail");
+    document.getElementById('timer').textContent = "BOOM!";
+    document.getElementById('bombImg').src = "https://pngimg.com/uploads/time_bomb/time_bomb_PNG8.png";
+    document.getElementById('bombShell').classList.add('bomb-boomed');
+    playSound('explosion');
+}
+
+function startTimer() {
+    let t = time;
+    function tick() {
+        if (defused || boomed) return;
+        let min = String(Math.floor(t / 60)).padStart(2, '0');
+        let sec = String(t % 60).padStart(2, '0');
+        document.getElementById('timer').textContent = `${min}:${sec}`;
+        if (t === 0) {
+            bombExplode();
+        } else t--;
+    }
+    timerInt = setInterval(tick, 1000);
+    tick();
+}
+
+function setMessage(msg, type="") {
+    let m = document.getElementById("message");
+    m.textContent = msg;
+    m.className = "message" + (type ? " "+type : "");
+}
+
+function shakeCircles() {
+    const c = document.getElementById('pinCircles');
+    c.style.transition = 'transform 0.14s';
+    c.style.transform = 'translateX(-12px)';
+    setTimeout(() => {
+        c.style.transform = 'translateX(12px)';
+        setTimeout(() => {
+            c.style.transform = 'translateX(0)';
+        }, 80);
+    }, 80);
+}
+
+// KEYBOARD support
+document.addEventListener('keydown', e=>{
+    if (/^[0-9]$/.test(e.key)) addDigit(e.key);
+    if (e.key==="Enter") enterPin();
+    if (e.key==="Backspace" || e.key==="Delete") clearPin();
+});
+
+// Render Keypad
+(function(){
+    let keypad = document.getElementById('keypad');
+    for (let i=1;i<=9;++i) {
+        let b = document.createElement('button');
+        b.type = "button";
+        b.textContent = i;
+        b.className = "key";
+        b.onclick = () => addDigit(i);
+        keypad.appendChild(b);
+    }
+    keypad.appendChild(document.createElement('div'));
+    let b0 = document.createElement('button');
+    b0.type = "button";
+    b0.textContent = "0";
+    b0.className = "key";
+    b0.onclick = () => addDigit(0);
+    keypad.appendChild(b0);
+    keypad.appendChild(document.createElement('div'));
+})();
+
+// INIT
+renderCircles();
+startTimer();
+</script>
+</body>
+</html>
